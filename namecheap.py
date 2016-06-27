@@ -308,10 +308,12 @@ class Api(object):
 		return self.LazyGetListIterator(self, payload)
 
 	# https://www.namecheap.com/support/api/methods/whoisguard/getlist.aspx
-	def whoisguard_getList(self):
+	def whoisguard_getList(self, ListType = None, PageSize = None):
 		"""
 		:return: an iterable of dicts.
 		"""
 		extra_payload = {'Page' : 1}
+		if ListType: extra_payload['ListType'] = ListType
+		if PageSize: extra_payload['PageSize'] = PageSize
 		payload = self._payload('namecheap.whoisguard.getList', extra_payload)
 		return self.LazyGetListIterator(self, payload, xpath='.//{%(ns)s}CommandResponse/{%(ns)s}WhoisguardGetListResult/{%(ns)s}Whoisguard' % {'ns' : NAMESPACE})
