@@ -35,7 +35,7 @@ class Api(object):
 	# https://www.namecheap.com/support/api/methods/domains/create.aspx
 	def domains_create(self, DomainName, FirstName, LastName,
 		Address1, City, StateProvince, PostalCode, Country, Phone,
-		EmailAddress, Address2 = None, years = 1):
+		EmailAddress, Address2 = None, years = 1, whoisguardActivated = False):
 		"""
 		Registers a domain name with the given contact info.
 		Example of a working phone number: +81.123123123
@@ -64,7 +64,19 @@ class Api(object):
 			if Address2:
 				extra_payload['%sAddress2' % contact_type] = Address2
 
+		if whoisguardActivated:
+			extra_payload['WGEnabled'] = 'yes'
+
 		self._call('namecheap.domains.create', extra_payload)
+
+		if whoisguardActivated:
+			whoisguardID = self.whoisguard_getIdByDomainName(DomainName)
+			if whoisguardID:
+				try:
+					self.whoisguard_enable(whoisguardID, EmailAddress)
+				except ApiError as e:
+					if e.number != '2011331':
+						raise e
 
 	def _payload(self, Command, extra_payload = {}):
 		"""Make dictionary for passing to requests.get"""
@@ -308,12 +320,35 @@ class Api(object):
 		return self.LazyGetListIterator(self, payload)
 
 	# https://www.namecheap.com/support/api/methods/whoisguard/getlist.aspx
-	def whoisguard_getList(self, ListType = None, PageSize = None):
+	def whoisguard_getList(self, Page = 1, ListType = None, PageSize = None):
 		"""
 		:return: an iterable of dicts.
 		"""
-		extra_payload = {'Page' : 1}
+		extra_payload = {'Page' : Page}
 		if ListType: extra_payload['ListType'] = ListType
 		if PageSize: extra_payload['PageSize'] = PageSize
 		payload = self._payload('namecheap.whoisguard.getList', extra_payload)
 		return self.LazyGetListIterator(self, payload, xpath='.//{%(ns)s}CommandResponse/{%(ns)s}WhoisguardGetListResult/{%(ns)s}Whoisguard' % {'ns' : NAMESPACE})
+
+	def whoisguard_getIdByDomainName(self, domain):
+		whoisguards = self.whoisguard_getList(Page = 1, PageSize = 100)
+		try:
+			while True:
+				whoisguard = whoisguards.next()
+				if whoisguard['DomainName'] == domain:
+					return whoisguard['ID']
+		except StopIteration:
+			pass
+
+	def whoisguard_enable(self, WhoisguardID, ForwardedToEmail):
+		extra_payload = {
+			'WhoisguardID': WhoisguardID,
+			'ForwardedToEmail': ForwardedToEmail
+		}
+		self._call("namecheap.whoisguard.enable", extra_payload)
+
+	def whoisguard_disable(self, WhoisguardID):
+		extra_payload = {
+			'WhoisguardID': WhoisguardID,
+		}
+		self._call("namecheap.whoisguard.disable", extra_payload)

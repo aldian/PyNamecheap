@@ -1,4 +1,5 @@
 # Run "nosetests" on command line to run these.
+import sys
 from namecheap import Api, ApiError
 from nose.tools import * # pip install nose
 
@@ -154,13 +155,55 @@ def test_list_of_dictionaries_to_numbered_payload():
 	assert_equal(result, expected_result)
 
 
-def test_whoisguard():
+def test_whoisguard_getList():
+	# Comment the return statement below to let this test case run
+	return
 	api = Api(username, api_key, username, ip_address, sandbox = False)
 	#api.debug = False
-	whoisguard_list = api.whoisguard_getList()
-	whoisguard = whoisguard_list.next()
-	print("WHOISGUARD ID: ", whoisguard['ID'])
-	assert_equal(whoisguard_list, False)
+	whoisguard_list = api.whoisguard_getList(Page=1, PageSize=20)
+	try:
+		i = 1
+		while True:
+			whoisguard = whoisguard_list.next()
+			print("WHOISGUARD: ", i, whoisguard['ID'], whoisguard['DomainName'], file=sys.stderr)
+			i += 1
+	except StopIteration as e:
+		pass
 
 
-test_whoisguard.whoisguard = 1
+def test_whoisguard_getIdByDomainName():
+	# Comment the return statement below to let this test case run
+	return
+	api = Api(username, api_key, username, ip_address, sandbox = False)
+	api.debug = False
+	whoisguardId = api.whoisguard_getIdByDomainName('banteg.tech')
+	assert_equal('15558880', whoisguardId)
+
+
+def test_whoisguard_enable():
+	# Comment the return statement below to let this test case run
+	#return
+	api = Api(username, api_key, username, ip_address, sandbox = False)
+	api.debug = False
+	try:
+		xml = api.whoisguard_enable('15558880', 'aldian.f@gmail.com')
+		print("XML:", xml, file=sys.stderr)
+	except ApiError as e:
+		print("e: ", e.number, type(e.number), file=sys.stderr)
+		if e.number != '2011331':
+			raise e
+
+def test_whoisguard_disable():
+	# Comment the return statement below to let this test case run
+	return
+	api = Api(username, api_key, username, ip_address, sandbox = False)
+	#api.debug = False
+	xml = api.whoisguard_disable('15558880')
+	print("XML:", xml, file=sys.stderr)
+
+
+test_whoisguard_getList.whoisguard = 1
+test_whoisguard_getIdByDomainName.whoisguard = 1
+test_whoisguard_enable.whoisguard = 1
+test_whoisguard_disable.whoisguard = 1
+#nosetests -a 'whoisguard'
