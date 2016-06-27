@@ -108,15 +108,18 @@ class Api(object):
 		This iterator gets the next page when necessary."""
 		def _get_more_results(self):
 			xml = self.api._fetch_xml(self.payload)
-			xpath = './/{%(ns)s}CommandResponse/{%(ns)s}DomainGetListResult/{%(ns)s}Domain' % {'ns' : NAMESPACE}
-			domains = xml.findall(xpath)
+			domains = xml.findall(self.xpath)
 			for domain in domains:
 				self.results.append(domain.attrib)
 			self.payload['Page'] += 1
 
-		def __init__(self, api, payload):
+		def __init__(self, api, payload, xpath=None):
 			self.api = api
 			self.payload = payload
+			if xpath is None:
+				self.xpath = './/{%(ns)s}CommandResponse/{%(ns)s}DomainGetListResult/{%(ns)s}Domain' % {'ns' : NAMESPACE}
+			else:
+				self.xpath = xpath
 			self.results = []
 			self.i = -1
 
@@ -303,3 +306,12 @@ class Api(object):
 		if SortBy: extra_payload['SortBy'] = SortBy
 		payload = self._payload('namecheap.domains.getList', extra_payload)
 		return self.LazyGetListIterator(self, payload)
+
+	# https://www.namecheap.com/support/api/methods/whoisguard/getlist.aspx
+	def whoisguard_getList(self):
+		"""
+		:return: an iterable of dicts.
+		"""
+		extra_payload = {'Page' : 1}
+		payload = self._payload('namecheap.whoisguard.getList', extra_payload)
+		return self.LazyGetListIterator(self, payload, xpath='.//{%(ns)s}CommandResponse/{%(ns)s}WhoisguardGetListResult/{%(ns)s}Whoisguard' % {'ns' : NAMESPACE})

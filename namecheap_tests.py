@@ -17,6 +17,11 @@ def random_domain_name():
 	domain_name = "%s%s.com" % (int(time.time()), random.randint(0,10**16))
 	return domain_name
 
+def test_credentials_not_empty():
+	assert_not_equal('', username.strip)
+	assert_not_equal('', api_key.strip)
+	assert_not_equal('', ip_address.strip)
+
 def test_domain_taken():
 	api = Api(username, api_key, username, ip_address, sandbox = True)
 	domain_name = "google.com"
@@ -147,3 +152,15 @@ def test_list_of_dictionaries_to_numbered_payload():
 	}
 
 	assert_equal(result, expected_result)
+
+
+def test_whoisguard():
+	api = Api(username, api_key, username, ip_address, sandbox = False)
+	#api.debug = False
+	whoisguard_list = api.whoisguard_getList()
+	whoisguard = whoisguard_list.next()
+	print("WHOISGUARD ID: ", whoisguard['ID'])
+	assert_equal(whoisguard_list, False)
+
+
+test_whoisguard.whoisguard = 1
