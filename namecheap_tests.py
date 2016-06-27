@@ -176,13 +176,16 @@ def test_whoisguard_getIdByDomainName():
 	return
 	api = Api(username, api_key, username, ip_address, sandbox = False)
 	api.debug = False
-	whoisguardId = api.whoisguard_getIdByDomainName('banteg.tech')
-	assert_equal('15558880', whoisguardId)
+	#whoisguardId = api.whoisguard_getIdByDomainName('banteg.tech')
+	#whoisguardId = api.whoisguard_getIdByDomainName('kampret.site')
+	whoisguardId = api.whoisguard_getIdByDomainName('kingkong.site')
+	#assert_equal('15558880', whoisguardId)
+	assert_equal('15570269', whoisguardId)
 
 
 def test_whoisguard_enable():
 	# Comment the return statement below to let this test case run
-	#return
+	return
 	api = Api(username, api_key, username, ip_address, sandbox = False)
 	api.debug = False
 	try:
@@ -201,9 +204,30 @@ def test_whoisguard_disable():
 	xml = api.whoisguard_disable('15558880')
 	print("XML:", xml, file=sys.stderr)
 
+def test_domains_create_with_whoisguard():
+	# Comment the return statement below to let this test case run
+	return
+	api = Api(username, api_key, username, ip_address, sandbox = False)
+	#api.debug = False
+	api.domains_create(
+		#DomainName = 'kampret.site',
+		DomainName = 'kingkong.site',
+		FirstName = 'Jack',
+		LastName = 'Trotter',
+		Address1 = 'Ridiculously Big Mansion, Yellow Brick Road',
+		City = 'Tokushima',
+		StateProvince = 'Tokushima',
+		PostalCode = '771-0144',
+		Country = 'Japan',
+		Phone = '+81.123123123',
+		EmailAddress = 'aldian.f@gmail.com',
+		whoisguardActivated = True,
+	)
+
 
 test_whoisguard_getList.whoisguard = 1
 test_whoisguard_getIdByDomainName.whoisguard = 1
 test_whoisguard_enable.whoisguard = 1
 test_whoisguard_disable.whoisguard = 1
+test_domains_create_with_whoisguard.whoisguard = 1
 #nosetests -a 'whoisguard'

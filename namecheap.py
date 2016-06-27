@@ -17,6 +17,8 @@ NAMESPACE = "http://api.namecheap.com/xml.response"
 
 # https://www.namecheap.com/support/api/error-codes.aspx
 class ApiError(Exception):
+	WHOISGUARD_ALREADY_ENABLED = '2011331'
+
 	def __init__(self, number, text):
 		Exception.__init__(self, '%s - %s' % (number, text))
 		self.number = number
@@ -65,6 +67,7 @@ class Api(object):
 				extra_payload['%sAddress2' % contact_type] = Address2
 
 		if whoisguardActivated:
+			extra_payload['AddFreeWhoisguard'] = 'yes'
 			extra_payload['WGEnabled'] = 'yes'
 
 		self._call('namecheap.domains.create', extra_payload)
@@ -75,7 +78,7 @@ class Api(object):
 				try:
 					self.whoisguard_enable(whoisguardID, EmailAddress)
 				except ApiError as e:
-					if e.number != '2011331':
+					if e.number != ApiError.WHOISGUARD_ALREADY_ENABLED:
 						raise e
 
 	def _payload(self, Command, extra_payload = {}):
